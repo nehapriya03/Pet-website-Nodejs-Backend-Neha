@@ -24,7 +24,7 @@ exports.getUserByPhoneNumber = async (phoneNumber) => {
 
 exports.getUserById = async (id) => {
   try {
-    return await user.findById({ userId: id });
+    return await user.findOne({ userId: id });
   } catch (error) {
     console.log(error);
     throw error;
@@ -33,7 +33,7 @@ exports.getUserById = async (id) => {
 
 exports.getUserByTargetUserId = async (id) => {
   try {
-    return await user.findById({ targetUserId: id });
+    return await user.findOne({ targetUserId: id });
   } catch (error) {
     console.log(error);
     throw error;
