@@ -1,4 +1,4 @@
-const user = require("../models/userModel");
+const User = require("../models/userModel");
 
 exports.addUser = async (user) => {
   return await user.save();
@@ -6,7 +6,7 @@ exports.addUser = async (user) => {
 
 exports.getUserByEmail = async (email) => {
   try {
-    return await user.findOne({ email });
+    return await User.findOne({ email });
   } catch (error) {
     console.log(error);
     throw error;
@@ -15,7 +15,7 @@ exports.getUserByEmail = async (email) => {
 
 exports.getUserByPhoneNumber = async (phoneNumber) => {
   try {
-    return await user.findOne({ phoneNumber });
+    return await User.findOne({ phoneNumber });
   } catch (error) {
     console.log(error);
     throw error;
@@ -24,7 +24,7 @@ exports.getUserByPhoneNumber = async (phoneNumber) => {
 
 exports.getUserById = async (id) => {
   try {
-    return await user.findOne({ userId: id });
+    return await User.findOne({ userId: id });
   } catch (error) {
     console.log(error);
     throw error;
@@ -33,7 +33,7 @@ exports.getUserById = async (id) => {
 
 exports.getUserByTargetUserId = async (id) => {
   try {
-    return await user.findOne({ targetUserId: id });
+    return await User.findOne({ targetUserId: id });
   } catch (error) {
     console.log(error);
     throw error;
@@ -43,7 +43,7 @@ exports.getUserByTargetUserId = async (id) => {
 exports.updateUserById = async (user) => {
   try {
     let { name, phoneNumber } = user;
-    return await user.findAndUpdate(
+    return await User.findOneAndUpdate(
       { userId: user.userId },
       { $set: { name, phoneNumber } }
     );

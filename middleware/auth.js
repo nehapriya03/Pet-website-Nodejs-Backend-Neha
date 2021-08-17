@@ -3,20 +3,20 @@ const envData = process.env;
 
 const isLoggedInUser = async (req, res, next) => {
   try {
-    if (!req.header.Authorization) {
+    if (!req.headers["authorization"]) {
       console.error("No authorization token found");
       return res
         .status(403)
         .send("No authrorization token was found for verification.");
     }
-
-    const token = req.header.Authorization.replace("Bearer ", "");
+    let token = req.headers["authorization"].replace("Bearer ", "");
+    console.log(token);
     const decode = jwt.verify(token, envData.JWT_SECRETKEY);
     console.info("Token was sucessfuly verified.");
-    req.userData = decoded;
+    req.userData = decode;
     next();
   } catch (error) {
-    console.error("There was some error in verifying the token");
+    console.error("There was some error in verifying the token", error);
     return res.status(500).send(error);
   }
 };

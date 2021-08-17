@@ -11,6 +11,7 @@ app.use(cors());
 const userRoutes = require("./routes/userRoutes");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(express.json());
 // app.use(morgan("dev"));
 app.use(userRoutes);
 

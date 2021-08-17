@@ -51,7 +51,6 @@ exports.addUser = async (req, res) => {
             email,
             phoneNumber,
             password: hash,
-
             targetUserId,
             profileType,
             gender,
@@ -65,6 +64,8 @@ exports.addUser = async (req, res) => {
                 {
                   email: addedUser.email,
                   userId: addedUser.userId,
+                  targetUserId: addedUser.targetUserId,
+                  phoneNumber: addedUser.phoneNumber,
                 },
                 envData.JWT_SECRETKEY,
                 {
@@ -75,6 +76,7 @@ exports.addUser = async (req, res) => {
               console.info(
                 `A new user with email: ${addedUser.email} was sucessfully added `
               );
+              console.info(token);
               return res
                 .status(200)
                 .send(
@@ -159,6 +161,7 @@ exports.getUserById = async (req, res) => {
         return res.status(400).send(`User with userId: ${id} does not exists`);
       } else {
         console.info(`User with userId: ${id} was sucessfully found`);
+        // res.send(results);
         return res
           .status(200)
           .send(`User with userId: ${id} was sucessfully found`);
@@ -174,24 +177,29 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.getUserByTargetId = async (req, res) => {
-  const id = req.params;
+  const { targetUserId } = req.params;
   await userRepository
-    .getUserByTargetUserId(id)
+    .getUserByTargetUserId(targetUserId)
     .then((results) => {
+      // console.log(results);
       if (results == null) {
-        console.error(`User with targetUserId: ${id} does not exists`);
+        console.error(
+          `User with targetUserId: ${targetUserId} does not exists`
+        );
         return res
           .status(404)
-          .send(`User with targetUserId: ${id} does not exists`);
+          .send(`User with targetUserId: ${targetUserId} does not exists`);
       }
-      console.log(`User with targetUserId: ${id} was sucesfully found`);
+      console.log(
+        `User with targetUserId: ${targetUserId} was sucesfully found`
+      );
       return res
         .status(200)
-        .send(`User with targetUserId: ${id} was sucessfully found`);
+        .send(`User with targetUserId: ${targetUserId} was sucessfully found`);
     })
     .catch((error) => {
       console.error(
-        `There was an error in finding the user with targetUserId: ${id}`,
+        `There was an error in finding the user with targetUserId: ${targetUserId}`,
         error
       );
       return res.status(500).send(ERROR_MESSAGE);
@@ -199,30 +207,71 @@ exports.getUserByTargetId = async (req, res) => {
 };
 
 exports.updateUserById = async (req, res, next) => {
-  const user = new User(req.body);
-  await userRepository
-    .updateUserById(user)
-    .then((results) => {
-      if (results.n === 0) {
-        console.error(
-          `Update Failed: User with userId: ${userId} does not exists`
-        );
-        return res
-          .status(400)
-          .send(`Update Failed: User with userId: ${userId} does not exists`);
-      }
-      console.log(
-        `Update sucessfull: User with userId: ${userId} was updated sucessfully `
-      );
+  const { id } = req.params;
+  console.log(req.body);
+  const {
+    userId,
+    name,
+    email,
+    password,
+    phoneNumber,
+    targetUserId,
+    profileType,
+    gender,
+    picturePath,
+  } = req.body.user;
+  if (id !== userId) {
+    console.error("Id in the body and path must be same");
+    return res.status(400).send("The ID in the body and the path must be same");
+  }
+
+  let user = {
+    userId,
+    email,
+    name,
+    phoneNumber,
+    profileType,
+    gender,
+    targetUserId,
+    picturePath,
+  };
+
+  await userRepository.getUserById(id).then(async (foundUser) => {
+    if (foundUser == null) {
+      console.error(`Update failed: user with userId: ${id} does not exists`);
       return res
-        .status(200)
-        .send(
-          `Update sucessfull: User with userId: ${userId} was updated sucessfully `,
-          results
+        .status(404)
+        .send(`Update failed: user with userId: ${id} does not exists`);
+    }
+
+    await userRepository
+      .updateUserById(user)
+      .then((results) => {
+        if (results.n === 0) {
+          console.error(
+            `Update Failed: User with userId: ${id} does not exists`
+          );
+          return res
+            .status(400)
+            .send(`Update Failed: User with userId: ${id} does not exists`);
+        }
+        console.log(
+          `Update sucessfull: User with userId: ${id} was updated sucessfully `
         );
-    })
-    .catch((error) => {
-      console.error(error);
-      return res.status(500).send(ERROR_MESSAGE);
-    });
+        // res.json(results);
+        return res
+          .status(200)
+          .send(
+            `Update sucessfull: User with userId: ${id} was updated sucessfully `
+          );
+      })
+      .catch((error) => {
+        console.error(error);
+        return res.status(500).send(ERROR_MESSAGE);
+      });
+  });
+  // .catch((error) => {
+  //   console.error(error);
+  //   return res.status(500).send(ERROR_MESSAGE);
+  // });
 };
