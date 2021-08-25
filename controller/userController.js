@@ -19,93 +19,92 @@ exports.addUser = async (req, res) => {
     picturePath,
   } = req.body;
 
-  await userRepository.getUserByEmail(email).then((result) => {
-    if (result !== null) {
-      console.error(`A user with email: ${email} already exists`);
-      return res.status(409).send(`A user with email: ${email} already exists`);
-    }
+  await userRepository
+    .getUserByEmail(email)
+    .then(async (result) => {
+      if (result !== null) {
+        console.error(`A user with email: ${email} already exists`);
+        return res
+          .status(409)
+          .send(`A user with email: ${email} already exists`);
+      }
 
-    userRepository
-      .getUserByPhoneNumber(phoneNumber)
-      .then((result) => {
-        if (result !== null) {
-          console.error(
-            `A user with phone number: ${phoneNumber} already exists.`
-          );
-          return res
-            .status(409)
-            .send(`A user with phone number: ${phoneNumber} already exists`);
-        }
-
-        bcrypt.hash(password, 12, async (error, hash) => {
-          if (error) {
-            console.log(
-              `There was an error while encrypting the password.`,
-              error
+      await userRepository
+        .getUserByPhoneNumber(phoneNumber)
+        .then((result) => {
+          if (result !== null) {
+            console.error(
+              `A user with phone number: ${phoneNumber} already exists.`
             );
+            return res
+              .status(409)
+              .send(`A user with phone number: ${phoneNumber} already exists`);
           }
-          password = hash;
 
-          const user = new User({
-            name,
-            email,
-            phoneNumber,
-            password: hash,
-            targetUserId,
-            profileType,
-            gender,
-            picturePath,
-          });
-
-          await userRepository
-            .addUser(user)
-            .then((addedUser) => {
-              const token = jwt.sign(
-                {
-                  email: addedUser.email,
-                  userId: addedUser.userId,
-                  targetUserId: addedUser.targetUserId,
-                  phoneNumber: addedUser.phoneNumber,
-                },
-                envData.JWT_SECRETKEY,
-                {
-                  expiresIn: "1h",
-                }
-              );
-
-              console.info(
-                `A new user with email: ${addedUser.email} was sucessfully added `
-              );
-              console.info(token);
-              return res
-                .status(200)
-                .send(
-                  `A new user with email: ${addedUser.email} was sucessfully added `
-                );
-            })
-            .catch((error) => {
-              console.error("An error occured while adding the user", error);
-              return res
-                .status(400)
-                .send("An error occured while adding the user", error);
-            })
-
-            .catch((error) => {
-              console.error(
-                `There was an error while fetching the user with email: ${user.email}.`,
+          bcrypt.hash(password, 12, async (error, hash) => {
+            if (error) {
+              console.log(
+                `There was an error while encrypting the password.`,
                 error
               );
-              return res.status(500).send(ERROR_MESSAGE);
+            }
+            password = hash;
+
+            const user = new User({
+              name,
+              email,
+              phoneNumber,
+              password: hash,
+              targetUserId,
+              profileType,
+              gender,
+              picturePath,
             });
+
+            await userRepository
+              .addUser(user)
+              .then((addedUser) => {
+                const token = jwt.sign(
+                  {
+                    email: addedUser.email,
+                    userId: addedUser.userId,
+                    targetUserId: addedUser.targetUserId,
+                    phoneNumber: addedUser.phoneNumber,
+                  },
+                  envData.JWT_SECRETKEY,
+                  {
+                    expiresIn: "1h",
+                  }
+                );
+
+                console.info(
+                  `A new user with email: ${addedUser.email} was sucessfully added `
+                );
+
+                return res.status(200).json({ user: addedUser, token });
+              })
+              .catch((error) => {
+                console.error("An error occured while adding the user", error);
+                return res
+                  .status(400)
+                  .send("An error occured while adding the user", error);
+              });
+          });
+        })
+        .catch((error) => {
+          console.log(
+            `There was an error fetching the user with phone number: ${user.phoneNumber}`,
+            error
+          );
         });
-      })
-      .catch((error) => {
-        console.log(
-          `There was an error fetching the user with phone number: ${user.phoneNumber}`,
-          error
-        );
-      });
-  });
+    })
+    .catch((error) => {
+      console.error(
+        `There was an error while fetching the user with email: ${user.email}.`,
+        error
+      );
+      return res.status(500).send(ERROR_MESSAGE);
+    });
 };
 
 exports.loginUser = async (req, res) => {
@@ -115,7 +114,6 @@ exports.loginUser = async (req, res) => {
       console.error(`User with email: ${email} does not exists`);
       return res.status(400).send(`User with email: ${email} does not exists`);
     }
-    console.log(user);
 
     bcrypt
       .compare(password, user.password)
@@ -161,10 +159,10 @@ exports.getUserById = async (req, res) => {
         return res.status(400).send(`User with userId: ${id} does not exists`);
       } else {
         console.info(`User with userId: ${id} was sucessfully found`);
+
         // res.send(results);
-        return res
-          .status(200)
-          .send(`User with userId: ${id} was sucessfully found`);
+        return res.status(200).json(results);
+        // .send(`User with userId: ${id} was sucessfully found`);
       }
     })
     .catch((error) => {
@@ -181,7 +179,6 @@ exports.getUserByTargetId = async (req, res) => {
   await userRepository
     .getUserByTargetUserId(targetUserId)
     .then((results) => {
-      // console.log(results);
       if (results == null) {
         console.error(
           `User with targetUserId: ${targetUserId} does not exists`
@@ -220,6 +217,7 @@ exports.updateUserById = async (req, res, next) => {
     gender,
     picturePath,
   } = req.body.user;
+
   if (id !== userId) {
     console.error("Id in the body and path must be same");
     return res.status(400).send("The ID in the body and the path must be same");
@@ -259,19 +257,14 @@ exports.updateUserById = async (req, res, next) => {
           `Update sucessfull: User with userId: ${id} was updated sucessfully `
         );
         // res.json(results);
-        return res
-          .status(200)
-          .send(
-            `Update sucessfull: User with userId: ${id} was updated sucessfully `
-          );
+        return res.status(200).json(user);
+        // .send(
+        //   `Update sucessfull: User with userId: ${id} was updated sucessfully `
+        // );
       })
       .catch((error) => {
         console.error(error);
         return res.status(500).send(ERROR_MESSAGE);
       });
   });
-  // .catch((error) => {
-  //   console.error(error);
-  //   return res.status(500).send(ERROR_MESSAGE);
-  // });
 };

@@ -3,17 +3,19 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 const mongoose = require("mongoose");
-// const morgan = require("morgan");
+const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const envData = process.env;
 app.use(cors());
 
 const userRoutes = require("./routes/userRoutes");
+const petRoutes = require("./routes/petRoutes");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
-// app.use(morgan("dev"));
+app.use(morgan("dev"));
 app.use(userRoutes);
+app.use("/pet", petRoutes);
 
 mongoose
   .connect(envData.DB, { useUnifiedTopology: true, useNewUrlParser: true })

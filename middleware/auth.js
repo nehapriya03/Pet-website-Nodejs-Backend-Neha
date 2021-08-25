@@ -10,7 +10,6 @@ const isLoggedInUser = async (req, res, next) => {
         .send("No authrorization token was found for verification.");
     }
     let token = req.headers["authorization"].replace("Bearer ", "");
-    console.log(token);
     const decode = jwt.verify(token, envData.JWT_SECRETKEY);
     console.info("Token was sucessfuly verified.");
     req.userData = decode;
