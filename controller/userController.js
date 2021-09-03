@@ -31,7 +31,7 @@ exports.addUser = async (req, res) => {
 
       await userRepository
         .getUserByPhoneNumber(phoneNumber)
-        .then((result) => {
+        .then(async (result) => {
           if (result !== null) {
             console.error(
               `A user with phone number: ${phoneNumber} already exists.`
@@ -63,7 +63,7 @@ exports.addUser = async (req, res) => {
 
             await userRepository
               .addUser(user)
-              .then((addedUser) => {
+              .then(async (addedUser) => {
                 const token = jwt.sign(
                   {
                     email: addedUser.email,
@@ -87,7 +87,7 @@ exports.addUser = async (req, res) => {
                 console.error("An error occured while adding the user", error);
                 return res
                   .status(400)
-                  .send("An error occured while adding the user", error);
+                  .send("An error occured while adding the user");
               });
           });
         })
@@ -205,7 +205,6 @@ exports.getUserByTargetId = async (req, res) => {
 
 exports.updateUserById = async (req, res, next) => {
   const { id } = req.params;
-  console.log(req.body);
   const {
     userId,
     name,

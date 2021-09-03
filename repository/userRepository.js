@@ -42,11 +42,8 @@ exports.getUserByTargetUserId = async (id) => {
 
 exports.updateUserById = async (user) => {
   try {
-    let { name, phoneNumber } = user;
-    return await User.findOneAndUpdate(
-      { userId: user.userId },
-      { $set: { name, phoneNumber } }
-    );
+    // let { name, phoneNumber } = user;
+    return await User.findOneAndUpdate({ userId: user.userId }, { $set: user });
   } catch (error) {
     console.log(error);
     throw error;

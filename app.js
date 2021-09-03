@@ -10,12 +10,16 @@ app.use(cors());
 
 const userRoutes = require("./routes/userRoutes");
 const petRoutes = require("./routes/petRoutes");
+const doctorRoutes = require("./routes/doctorRoutes");
+const caretakerRoutes = require("./routes/caretakerRoutes");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(userRoutes);
 app.use("/pet", petRoutes);
+app.use("/doctor", doctorRoutes);
+app.use("/caretaker", caretakerRoutes);
 
 mongoose
   .connect(envData.DB, { useUnifiedTopology: true, useNewUrlParser: true })

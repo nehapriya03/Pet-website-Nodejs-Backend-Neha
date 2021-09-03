@@ -10,9 +10,9 @@ exports.addCaretaker = async (caretaker) => {
   }
 };
 
-exports.getCaretakerById = async (id) => {
+exports.getCaretakerById = async (caretakerId) => {
   try {
-    return await Caretaker.findOne({ caretakerId: id });
+    return await Caretaker.findOne({ caretakerId: caretakerId });
   } catch (error) {
     console.error(error);
     throw error;
@@ -23,7 +23,7 @@ exports.updateCaretakerById = async (caretaker) => {
   try {
     return await Caretaker.updateOne(
       { caretakerId: caretaker.caretakerId },
-      { $set: { caretaker } }
+      { $set: caretaker }
     );
   } catch (error) {
     console.error(error);
