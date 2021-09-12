@@ -8,6 +8,7 @@ router.post("/", doctorController.addDoctor);
 router.get("/:id", doctorController.getDoctorByDoctorId);
 router.get("/get/all", doctorController.getAllDoctor);
 router.put("/:id", doctorController.updateDoctorById);
+router.post("/get/review", doctorController.getDoctorsByAvgReview);
 router.delete("/:id", isLoggedIn, doctorController.getDoctorByDoctorId);
 
 module.exports = router;

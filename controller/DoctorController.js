@@ -188,3 +188,38 @@ exports.deleteDoctorById = async (req, res, next) => {
     return res.status(500).send(ERROR_MESSAGE);
   }
 };
+
+exports.getDoctorsByAvgReview = async (req, res, next) => {
+  try {
+    let { locationArray, doctorId } = req.body;
+    await doctorRepository
+      .getDoctorByAvgReview(locationArray, doctorId)
+      .then((doctorsWithAvgReview) => {
+        if (doctorsWithAvgReview.length === 0) {
+          console.error(
+            `No Doctors were found with review info for location ${locationArray.toString()}`
+          );
+          return res
+            .status(404)
+            .send(
+              `No Doctors were found with review info for location ${locationArray.toString()}.`
+            );
+        }
+        console.info(
+          `Doctors with their review data of location: ${locationArray.toString()} were successfully found.`
+        );
+        return res.status(200).send(doctorsWithAvgReview);
+      })
+      .catch((error) => {
+        console.error(error);
+        return res
+          .status(500)
+          .send(
+            `There was some error while fetching the doctors of location: ${locationArray.toString()} with their review data.`
+          );
+      });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(ERROR_MESSAGE);
+  }
+};

@@ -48,3 +48,53 @@ exports.deleteDoctorById = async (doctorId) => {
     throw error;
   }
 };
+
+exports.getDoctorByAvgReview = async (locationArray, doctorId) => {
+  try {
+    let matchQuery = {};
+    if (locationArray.length !== 0) {
+      matchQuery = {
+        locationArray: { $in: location },
+      };
+    }
+    if (typeof doctorId !== "undefined") {
+      matchQuery = {
+        ...matchQuery,
+        doctorId,
+      };
+    }
+
+    return await Doctor.aggregate([
+      {
+        $match: matchQuery,
+      },
+      {
+        $lookup: {
+          from: "review",
+          localField: "doctorId",
+          foreignField: "reviewOfId",
+          as: "reviewData",
+        },
+      },
+      {
+        $addFields: {
+          reviewAvg: {
+            $avg: "$reviewData.rating",
+          },
+          reviewCount: {
+            $size: "$reviewData",
+          },
+        },
+      },
+      {
+        $sort: {
+          reviewAvg: -1,
+          reviewCount: -1,
+        },
+      },
+    ]);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
